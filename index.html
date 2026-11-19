@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Bảng Điều Khiển Học Viện Pitch</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@700&family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Be+Vietnam+Pro:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Castle at night. Candle gold = active / your action; wax red = seals waiting on you; teal = done. */
+  --night: #12131f;
+  --vault: #1b1d2e;
+  --vault-2: #222439;
+  --stone: #2e3049;
+  --parchment: #efe4cc;
+  --mist: #aaa7ba;
+  --candle: #e2b45a;
+  --wax: #d0563f;
+  --moss: #6fb59a;
+  --font-crest: "Grenze Gotisch", Georgia, serif;
+  --font-display: "Cormorant Garamond", Georgia, serif;
+  --font-body: "Be Vietnam Pro", "Segoe UI", Arial, sans-serif;
+  /* layout: banner · header stats · pipeline chips · [roster | loop map + practice | task board + prompt composer] */
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--night); color: var(--parchment); }
+body { font-family: var(--font-body); font-size: 14px; line-height: 1.5; }
+button, select, input, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--candle); outline-offset: 2px; }
+
+.banner { background: var(--candle); color: var(--night); text-align: center; font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 7px 16px; }
+.banner.real { background: var(--vault-2); color: var(--mist); }
+.page { max-width: 1520px; margin: 0 auto; padding: 18px 22px 40px; }
+
+header { display: flex; flex-wrap: wrap; align-items: center; gap: 16px 28px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.brand .av { width: 56px; height: 56px; border: 1px solid var(--stone); background: var(--vault); display: grid; place-items: center; }
+.brand h1 { font-family: var(--font-crest); font-size: 36px; line-height: 1; margin: 0; }
+.brand h1 span { color: var(--candle); }
+.brand p { margin: 4px 0 0; font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--mist); }
+.clock { font-family: var(--font-display); font-size: 24px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stats { display: flex; flex-wrap: wrap; gap: 8px; margin-left: auto; }
+.stat { border: 1px solid var(--stone); background: var(--vault); padding: 6px 14px; display: flex; align-items: baseline; gap: 8px; font-size: 13px; color: var(--mist); }
+.stat b { font-family: var(--font-display); font-size: 24px; color: var(--parchment); font-variant-numeric: tabular-nums; }
+.stat.alert { border-color: var(--wax); }
+.stat.alert b { color: var(--wax); }
+
+.pipeline { display: flex; align-items: center; gap: 10px; margin: 18px 0; }
+.pipeline > span { font-size: 11px; font-weight: 600; letter-spacing: 2px; text-transform: uppercase; color: var(--mist); white-space: nowrap; }
+.chips { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 4px; flex: 1; border: 1px solid var(--stone); padding: 4px; background: var(--vault); overflow-x: auto; }
+.chip { text-align: center; font-size: 12px; font-weight: 600; padding: 6px 4px; color: var(--mist); white-space: nowrap; min-width: 84px; }
+.chip.done { background: rgba(111,181,154,.16); color: var(--moss); }
+.chip.on { background: var(--candle); color: var(--night); }
+.chip.wait { background: var(--wax); color: var(--night); }
+
+.grid { display: grid; grid-template-columns: 320px minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.panel { background: var(--vault); border: 1px solid var(--stone); padding: 18px; min-width: 0; }
+.panel-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; margin-bottom: 14px; }
+.panel h2 { font-family: var(--font-display); font-style: italic; font-size: 28px; line-height: 1; margin: 0; }
+.panel-head small { color: var(--mist); font-size: 12px; text-align: right; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--mist); margin: 0 0 10px; }
+
+/* roster */
+.roster { display: flex; flex-direction: column; gap: 8px; max-height: 1080px; overflow-y: auto; padding-right: 4px; }
+.member { display: grid; grid-template-columns: 44px 1fr; gap: 12px; padding: 12px; background: var(--vault-2); border: 1px solid transparent; }
+.member.work { border-color: var(--candle); }
+.member.hold { border-color: var(--wax); }
+.member .pic { width: 44px; height: 44px; border: 1px solid var(--stone); background: var(--night); display: grid; place-items: center; }
+.member h3 { font-family: var(--font-display); font-size: 18px; line-height: 1.15; margin: 0; }
+.member p { margin: 2px 0 6px; font-size: 12px; color: var(--mist); }
+.tags { display: flex; flex-wrap: wrap; gap: 4px; }
+.tag { font-size: 11px; font-weight: 600; padding: 1px 8px; border: 1px solid var(--stone); color: var(--mist); }
+.tag.model { color: var(--candle); border-color: rgba(226,180,90,.4); }
+.tag.st-work { background: var(--candle); color: var(--night); border-color: var(--candle); }
+.tag.st-hold { background: var(--wax); color: var(--night); border-color: var(--wax); }
+.tag.st-done { color: var(--moss); border-color: rgba(111,181,154,.5); }
+details.tower { border-top: 1px solid var(--stone); padding-top: 8px; }
+details.tower summary { cursor: pointer; list-style: none; display: flex; justify-content: space-between; align-items: baseline; padding: 4px 2px 8px; }
+details.tower summary::-webkit-details-marker { display: none; }
+details.tower summary b { font-family: var(--font-display); font-size: 19px; }
+details.tower summary b i { font-family: var(--font-crest); font-style: normal; color: var(--candle); margin-right: 8px; }
+details.tower summary span { font-size: 12px; color: var(--mist); }
+details.tower .list { display: flex; flex-direction: column; gap: 6px; padding-bottom: 6px; }
+
+/* map */
+.map { border: 1px solid var(--stone); background:
+  radial-gradient(circle at 1px 1px, rgba(170,167,186,.14) 1px, transparent 0) 0 0 / 22px 22px, var(--night); }
+.map svg { display: block; width: 100%; height: auto; }
+.edge { fill: none; stroke: var(--stone); stroke-width: 3; stroke-dasharray: 7 7; }
+.edge.done { stroke: var(--moss); }
+.edge.on { stroke: var(--candle); animation: flow .6s linear infinite; }
+.edge.loop { stroke: var(--wax); stroke-width: 2; }
+.edge.loop.on { stroke: var(--wax); }
+@keyframes flow { to { stroke-dashoffset: -28; } }
+.node .ring { fill: var(--vault); stroke: var(--stone); stroke-width: 2; }
+.node.on .ring { stroke: var(--candle); stroke-width: 3; }
+.node.done .ring { stroke: var(--moss); }
+.node.wait .ring { stroke: var(--wax); stroke-width: 3; }
+.node.wait .halo { animation: pulse 1.2s ease-in-out infinite; }
+.node .halo { fill: var(--wax); opacity: 0; }
+@keyframes pulse { 0%,100% { opacity: .08; } 50% { opacity: .3; } }
+.node text.t { font-family: var(--font-display); font-weight: 700; font-size: 19px; fill: var(--parchment); text-anchor: middle; }
+.node text.s { font-family: var(--font-body); font-size: 12px; fill: var(--mist); text-anchor: middle; }
+.node .flag { display: none; }
+.node.wait .flag { display: block; }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12px; color: var(--mist); margin: 10px 0 0; }
+.legend i { display: inline-block; width: 22px; border-top: 3px dashed var(--candle); vertical-align: middle; margin-right: 6px; }
+.legend i.r { border-color: var(--wax); border-top-width: 2px; }
+.legend i.g { border-color: var(--moss); }
+.practice { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 14px; }
+.practice label { font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: var(--mist); }
+select, input[type="text"], textarea { background: var(--night); border: 1px solid var(--stone); padding: 8px 10px; min-width: 0; }
+.practice select { flex: 1; min-width: 220px; }
+.btn { border: 1px solid var(--stone); background: var(--vault-2); padding: 8px 14px; font-weight: 600; font-size: 13px; }
+.btn:hover { border-color: var(--candle); }
+.btn.gold { background: var(--candle); border-color: var(--candle); color: var(--night); }
+.btn.red { background: var(--wax); border-color: var(--wax); color: var(--night); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.seg { display: inline-flex; }
+.seg button + button { border-left: 0; }
+.seg button[aria-pressed="true"] { color: var(--candle); border-color: var(--candle); }
+.log { margin-top: 14px; border-top: 1px solid var(--stone); padding-top: 12px; }
+.log ol { list-style: none; margin: 0; padding: 0; max-height: 190px; overflow-y: auto; display: flex; flex-direction: column; gap: 6px; }
+.log li { font-size: 13px; display: grid; grid-template-columns: 54px 1fr; gap: 8px; }
+.log li time { color: var(--mist); font-variant-numeric: tabular-nums; }
+.log li.g span { color: var(--wax); }
+
+/* board */
+.tasks { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+.task { border: 1px solid var(--wax); background: rgba(208,86,63,.08); padding: 14px; display: grid; grid-template-columns: 34px 1fr; gap: 12px; }
+.task .seal { width: 34px; height: 34px; border-radius: 50%; background: var(--wax); color: var(--night); display: grid; place-items: center; font-family: var(--font-crest); font-size: 15px; }
+.task h3 { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+.task p { margin: 0 0 10px; font-size: 13px; color: var(--mist); }
+.task .acts { display: flex; flex-wrap: wrap; gap: 6px; }
+.empty { font-size: 13px; color: var(--mist); border: 1px dashed var(--stone); padding: 12px 14px; margin: 0; }
+.presets { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+.preset { text-align: left; border: 1px solid var(--stone); background: var(--vault-2); padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+.preset b { font-family: var(--font-display); font-size: 17px; line-height: 1.15; }
+.preset span { font-size: 12px; color: var(--mist); }
+.preset[aria-pressed="true"] { border-color: var(--candle); }
+.form { display: grid; gap: 10px; }
+.field { display: grid; gap: 4px; }
+.field label { font-size: 12px; font-weight: 600; color: var(--mist); }
+.field select, .field input, .field textarea { width: 100%; }
+.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.check { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; }
+.check input { margin-top: 3px; accent-color: var(--candle); }
+.out { margin-top: 14px; border-top: 1px solid var(--stone); padding-top: 14px; }
+.out textarea { width: 100%; min-height: 260px; font-family: ui-monospace, Consolas, monospace; font-size: 12px; line-height: 1.55; resize: vertical; }
+.out .bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 8px; font-size: 12px; color: var(--mist); }
+.copied { color: var(--moss); font-weight: 600; }
+
+@media (max-width: 1280px) { .grid { grid-template-columns: 300px minmax(0, 1fr); } .board { grid-column: 1 / -1; } }
+@media (max-width: 860px) { .grid { grid-template-columns: 1fr; } .roster { max-height: 520px; } .stats { margin-left: 0; } .presets { grid-template-columns: 1fr; } }
+@media (prefers-reduced-motion: reduce) { .edge.on, .node.wait .halo { animation: none; } .node.wait .halo { opacity: .2; } }
+</style>
+</head>
+<body>
+<div class="banner" id="banner">Chế độ tập · bấm gì cũng chỉ chạy giả, không gọi Claude, không tạo ảnh, không tốn credit</div>
+<div class="page">
+  <header>
+    <div class="brand">
+      <div class="av" id="brandAv"></div>
+      <div>
+        <h1>Học Viện <span>Pitch</span></h1>
+        <p>ForArt Film · skill creative-pitch-agent</p>
+      </div>
+    </div>
+    <div class="clock" id="clock">--:--</div>
+    <div class="stats">
+      <div class="stat" id="statSeal"><b id="nSeal">0</b>ấn chờ bạn</div>
+      <div class="stat"><b id="nBrief">0</b>brief mẫu</div>
+      <div class="stat"><b>6</b>tầng tháp</div>
+      <div class="stat"><b>26</b>vai agent</div>
+      <div class="stat"><b id="nRuns">0</b>lượt tập hôm nay</div>
+    </div>
+  </header>
+
+  <div class="pipeline">
+    <span>Brief đang chạy</span>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="grid">
+    <section class="panel">
+      <div class="panel-head"><h2>Đội hình</h2><small id="teamState">cả học viện đang nghỉ</small></div>
+      <div class="roster" id="roster"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h2>Bản đồ vòng lặp</h2><small>một brief đi hết một vòng</small></div>
+      <div class="map">
+        <svg viewBox="0 0 1000 560" role="img" aria-label="Vòng lặp: Giao việc, Tầng I Debrief, Ấn I, Tầng II Research, Ấn II, Tầng III Brainstorm, Tầng IV Concept, Ấn III, Tầng V Proposal, Tầng VI Thẩm định, Creative Proposal. Tầng VI trả về Tầng V khi trượt." id="map"></svg>
+      </div>
+      <div class="legend"><span><i></i>luồng chính</span><span><i class="g"></i>đã đi qua</span><span><i class="r"></i>bạn sửa hoặc trượt, quay lại làm</span><span>ô viền đỏ là ấn bạn duyệt</span></div>
+      <div class="practice">
+        <label for="practiceBrief">Brief tập</label>
+        <select id="practiceBrief"></select>
+        <button class="btn gold" id="runBtn" type="button">▶ Chạy thử 1 brief</button>
+        <div class="seg" role="group" aria-label="Tốc độ">
+          <button class="btn" type="button" data-speed="1" aria-pressed="false">×1</button>
+          <button class="btn" type="button" data-speed="3" aria-pressed="true">×3</button>
+          <button class="btn" type="button" data-speed="8" aria-pressed="false">×8</button>
+        </div>
+      </div>
+      <div class="log"><p class="eyebrow">Nhật ký lượt tập</p><ol id="log" aria-live="polite"><li><time>--</time><span>Chọn một brief rồi bấm “Chạy thử 1 brief” để xem học viện làm việc.</span></li></ol></div>
+    </section>
+
+    <section class="panel board">
+      <div class="panel-head"><h2>Bảng nhiệm vụ</h2></div>
+      <p class="eyebrow" id="taskHead">Việc đang chờ bạn (0)</p>
+      <div class="tasks" id="tasks"><p class="empty">Chưa có ấn nào chờ duyệt.</p></div>
+
+      <p class="eyebrow">Giao việc cho đội thật</p>
+      <p style="margin:0 0 12px;font-size:13px;color:var(--mist)">Chọn việc, chỉnh ô bên dưới, bấm Chép rồi dán vào Claude Code mở ở thư mục D:\ForArt. Hiệu Trưởng sẽ gọi đúng người.</p>
+      <div class="presets" id="presets"></div>
+      <form class="form" id="form" onsubmit="return false">
+        <div class="field"><label for="fBrief">Brief</label><select id="fBrief"></select></div>
+        <div class="field" id="otherWrap" hidden><label for="fOther">Đường dẫn brief khác</label><input id="fOther" type="text" placeholder="D:\ForArt\Brief\..."></div>
+        <div class="field"><label for="fBrand">Brand guideline</label><select id="fBrand"></select></div>
+        <div class="row2">
+          <div class="field"><label for="fType">Loại job</label><select id="fType"><option>Để agent đọc từ brief</option><option>TVC</option><option>MV</option><option>Phim doanh nghiệp</option><option>Manifesto</option><option>Video sales letter</option><option>Photoshoot</option></select></div>
+          <div class="field"><label for="fLen">Thời lượng</label><input id="fLen" type="text" placeholder="theo brief"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label for="fLevel">Cấp độ proposal</label><select id="fLevel"><option value="ask">Hỏi tôi ở Cổng 1</option><option value="pitch">Pitch ban đầu</option><option value="job">Job đã chốt</option></select></div>
+          <div class="field"><label for="fTheme">Theme deck</label><select id="fTheme"><option value="">Lấy từ brand guideline</option><option value="forart">ForArt (house)</option><option value="forart-dark">ForArt Screening (tối)</option><option value="buv">BUV</option><option value="sunhouse">Sunhouse</option><option value="spotless">Spotless</option><option value="golden-reel">MV Hạnh Phúc Lang Thang</option></select></div>
+        </div>
+        <div class="field"><label for="fScope">Phạm vi</label><select id="fScope">
+          <option value="full">Làm trọn 6 giai đoạn đến deck</option>
+          <option value="debrief">Chỉ Debrief, dừng ở Cổng 1</option>
+          <option value="research">Debrief + Research, dừng ở Cổng 2</option>
+          <option value="concepts">Đến 3 concept, dừng ở Cổng 3</option>
+          <option value="deck">Dựng deck từ 2 concept đã chọn</option>
+          <option value="qa">Chỉ thẩm định một deck có sẵn</option>
+        </select></div>
+        <div class="field" id="conceptWrap" hidden><label for="fConcepts">2 concept đã chọn / đường dẫn deck cần thẩm định</label><input id="fConcepts" type="text" placeholder="Idea 1: …  Idea 2: …"></div>
+        <label class="check"><input type="checkbox" id="fGates" checked><span>Dừng ở cả 3 cổng duyệt (bỏ chọn = chạy thẳng, ghi giả định ở đầu kết quả)</span></label>
+        <label class="check"><input type="checkbox" id="fParallel" checked><span>Gọi agent con song song cho research, brainstorm, concept và thẩm định</span></label>
+        <label class="check"><input type="checkbox" id="fImages" checked><span>Cho phép tạo ảnh AI, nhưng báo số ảnh và chờ tôi đồng ý trước</span></label>
+        <div class="field"><label for="fNote">Ghi chú thêm</label><textarea id="fNote" rows="2" placeholder="Ví dụ: khách thích hướng cảm xúc, tránh CGI"></textarea></div>
+      </form>
+      <div class="out">
+        <p class="eyebrow">Câu lệnh sẽ dán vào Claude Code</p>
+        <textarea id="prompt" aria-label="Câu lệnh giao việc" spellcheck="false"></textarea>
+        <div class="bar"><span id="copyNote">dán vào Claude Code</span><button class="btn gold" id="copyBtn" type="button">Chép</button></div>
+      </div>
+    </section>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = id => document.getElementById(id);
+const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+// ---------- data ----------
+const BRIEFS = [
+  'D:\\ForArt\\Brief\\Brief mau - TVC Tet 30s.pdf',
+  'D:\\ForArt\\Brief\\Brief mau - MV ca nhac.pdf',
+  'D:\\ForArt\\Brief\\Brief mau - Phim doanh nghiep 3 phut.pdf',
+  'D:\\ForArt\\Brief\\Brief mau - Video sales letter 60s.pdf',
+  'D:\\ForArt\\Brief\\Brief mau - Photoshoot lifestyle.pdf',
+  'D:\\ForArt\\Brief\\Brief mau - Manifesto thuong hieu.pdf',
+];
+const BRANDS = [
+  ['', 'Chưa có, đọc từ brief'],
+  ['D:\\ForArt\\Branding\\<ten-khach>\\brand-guideline.pdf', 'Brand guideline của khách (sửa đường dẫn)'],
+];const base = p => p.split('\\').pop();
+
+const TOWERS = [
+  { id: 't1', roman: 'I', name: 'Tháp Giải Mã', phase: 'Debrief', chip: 'Debrief', agents: [
+    ['Người Giải Mã Cuộn Thư', 'Đọc brief, lập bảng debrief, liệt kê điểm thiếu và câu hỏi gửi khách.', 'Sonnet 5.5', '#6c8ebf'],
+    ['Người Gác Luật Thương Hiệu', 'Rút màu, font, quy định logo, điều cấm thành Bộ Luật dùng xuyên suốt.', 'Sonnet 5.5', '#6c8ebf'] ] },
+  { id: 't2', roman: 'II', name: 'Đài Quan Sao', phase: 'Research', chip: 'Research', agents: [
+    ['Tiên Tri Thương Hiệu', 'Định vị, các TVC và chiến dịch gần đây, có link nguồn.', 'Sonnet 5.5', '#8a7cc8'],
+    ['Tiên Tri Khán Giả', 'Thói quen, mong muốn, nỗi đau, ngôn ngữ của đối tượng.', 'Sonnet 5.5', '#8a7cc8'],
+    ['Kẻ Canh Đối Thủ', '2–4 chiến dịch đối thủ gần đây để tránh trùng ý.', 'Sonnet 5.5', '#8a7cc8'],
+    ['Người Sưu Tầm Thước Phim', 'Reference phong cách, format, kỹ thuật; lưu link video thật.', 'Haiku 5.5', '#8a7cc8'],
+    ['Người Giữ Sổ Nguồn', 'Gắn “chưa xác minh” cho câu không nguồn, rút 3–5 manh mối insight.', 'Opus 5.5', '#c7c9d3'] ] },
+  { id: 't3', roman: 'III', name: 'Xưởng Giả Kim', phase: 'Brainstorm', chip: 'Brainstorm', agents: [
+    ['Học Trò · Ẩn dụ hình ảnh', 'Ý thô qua ẩn dụ hình ảnh.', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Format', 'Manifesto, one-take, MV, hybrid documentary, chỉ super text.', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Văn hoá – mùa vụ', 'Tết, World Cup, mùa tựu trường…', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Chất liệu dân gian', 'Ca dao, truyện cổ, lễ hội.', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Nhân vật đại diện', 'Một người kể chuyện cho cả thương hiệu.', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Quá khứ – hiện tại', 'Đối lập hai thời điểm.', 'Sonnet 5.5', '#4fa38a'],
+    ['Học Trò · Bên trong sản phẩm', 'Thế giới bên trong sản phẩm, CGI.', 'Sonnet 5.5', '#4fa38a'],
+    ['Người Cân Ma Lực', 'Gộp ý trùng, chấm 6 tiêu chí 1–5, hiện bảng chấm.', 'Opus 5.5', '#e2b45a'] ] },
+  { id: 't4', roman: 'IV', name: 'Phòng Ba Ngọn Nến', phase: 'Concept', chip: 'Concept', agents: [
+    ['Pháp Sư Nến Bạc', 'Concept an toàn, bám sát brief.', 'Opus 5.5', '#c7c9d3'],
+    ['Pháp Sư Nến Vàng', 'Concept cân bằng, một điểm mới đủ nhớ.', 'Opus 5.5', '#e2b45a'],
+    ['Pháp Sư Nến Đỏ', 'Concept táo bạo, format khách chưa thấy.', 'Opus 5.5', '#d0563f'],
+    ['Pháp Sư Hậu Cần', 'Độ phức tạp sản xuất, rủi ro, bảng so sánh, khuyến nghị.', 'Sonnet 5.5', '#8c7a5b'] ] },
+  { id: 't5', roman: 'V', name: 'Tháp Chế Tác', phase: 'Proposal', chip: 'Proposal', agents: [
+    ['Người Chép Treatment', '7 phần bắt buộc cho mỗi idea; storyboard nếu là Job đã chốt.', 'Opus 5.5', '#b07ad0'],
+    ['Nhà Ảo Ảnh', 'Ảnh storyboard bằng AiWings, chỉ sau khi bạn đồng ý số ảnh.', 'AiWings', '#5fb3c9'],
+    ['Người Giữ Kho Tham Chiếu', 'Ảnh reference, location, moodboard, link video thật.', 'Haiku 5.5', '#b07ad0'],
+    ['Thợ Đóng Sách', 'Ráp deck theo mẫu ForArt, áp design system và theme khách.', 'Sonnet 5.5', '#e2b45a'] ] },
+  { id: 't6', roman: 'VI', name: 'Hội Đồng Thẩm Định', phase: 'Thẩm định', chip: 'Thẩm định', agents: [
+    ['Quan Kiểm Tra Danh Mục', 'Đủ 7 phần, thời lượng khớp, USP, điều cấm, nguồn.', 'Sonnet 5.5', '#a3a3b8'],
+    ['Kẻ Đóng Vai Khách Hàng', '5 câu hỏi khó nhất và slide nào trả lời.', 'Opus 5.5', '#d0563f'] ] },
+];
+const HEAD = { name: 'Hiệu Trưởng', desc: 'Phiên chính nói chuyện với bạn. Giao việc, gom kết quả, giữ Sổ Giả Định. Người duy nhất hỏi bạn.', model: 'Opus 5.5', color: '#4b3a7a' };
+
+// pipeline chips (id → label)
+const CHIPS = [['brief', 'Giao việc'], ['t1', 'Debrief'], ['s1', 'Ấn I'], ['t2', 'Research'], ['s2', 'Ấn II'], ['t3', 'Brainstorm'], ['t4', 'Concept'], ['s3', 'Ấn III'], ['t5', 'Proposal'], ['t6', 'Thẩm định']];
+
+// ---------- pixel wizard ----------
+const SPRITE = [
+  '....hh....',
+  '...hhh....',
+  '..hhhhh...',
+  '.bbbbbbb..',
+  '..ssssss.g',
+  '..sesses.w',
+  '..ssssss.w',
+  '..rrrrrr.w',
+  '.rrrrrrrrw',
+  '.rrrdrrrr.',
+  '.rrrrrrrr.',
+  '..dd..dd..',
+];
+function shade(hex, k) { const n = parseInt(hex.slice(1), 16); const f = v => Math.max(0, Math.min(255, Math.round(v * k))); return `rgb(${f(n >> 16 & 255)},${f(n >> 8 & 255)},${f(n & 255)})`; }
+function wizardSVG(color, size = 36) {
+  const pal = { h: shade(color, .55), b: '#e2b45a', s: '#e6c7a3', e: '#12131f', r: color, d: shade(color, .7), w: '#8c6a43', g: '#e2b45a' };
+  let rects = '';
+  SPRITE.forEach((row, y) => [...row].forEach((c, x) => { if (c !== '.') rects += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${pal[c]}"/>`; }));
+  return `<svg width="${size}" height="${size * 1.2}" viewBox="0 0 10 12" shape-rendering="crispEdges" aria-hidden="true">${rects}</svg>`;
+}
+function wizardG(color, cx, cy, scale = 4) {
+  const pal = { h: shade(color, .55), b: '#e2b45a', s: '#e6c7a3', e: '#12131f', r: color, d: shade(color, .7), w: '#8c6a43', g: '#e2b45a' };
+  let rects = '';
+  SPRITE.forEach((row, y) => [...row].forEach((c, x) => { if (c !== '.') rects += `<rect x="${x}" y="${y}" width="1.02" height="1.02" fill="${pal[c]}"/>`; }));
+  return `<g transform="translate(${cx - 5 * scale} ${cy - 6 * scale}) scale(${scale})" shape-rendering="crispEdges">${rects}</g>`;
+}
+$('brandAv').innerHTML = wizardSVG(HEAD.color, 34);
+
+// ---------- roster ----------
+const status = {}; // agent name → 'idle'|'work'|'hold'|'done'
+const runs = {};
+function memberHTML(name, desc, model, color) {
+  const st = status[name] || 'idle';
+  const stLabel = { idle: 'nghỉ', work: 'đang làm', hold: 'chờ bạn', done: 'xong' }[st];
+  return `<div class="member ${st}"><div class="pic">${wizardSVG(color, 30)}</div><div><h3>${name}</h3><p>${desc}</p><div class="tags"><span class="tag st-${st}">${stLabel}</span><span class="tag model">${model}</span><span class="tag">chạy ${runs[name] || 0} lần</span></div></div></div>`;
+}
+let openTower = 't1';
+function renderRoster() {
+  const r = $('roster');
+  let html = memberHTML(HEAD.name, HEAD.desc, HEAD.model, HEAD.color);
+  for (const t of TOWERS) {
+    const busy = t.agents.filter(a => status[a[0]] === 'work').length;
+    html += `<details class="tower" ${t.id === openTower ? 'open' : ''} data-t="${t.id}"><summary><b><i>${t.roman}</i>${t.name}</b><span>${busy ? busy + ' đang làm' : t.agents.length + ' phù thuỷ'}</span></summary><div class="list">${t.agents.map(a => memberHTML(...a)).join('')}</div></details>`;
+  }
+  r.innerHTML = html;
+  r.querySelectorAll('details').forEach(d => d.addEventListener('toggle', () => { if (d.open) openTower = d.dataset.t; }));
+  const working = Object.values(status).filter(s => s === 'work').length;
+  const holding = Object.values(status).filter(s => s === 'hold').length;
+  $('teamState').textContent = working ? working + ' phù thuỷ đang làm' : holding ? 'đang chờ bạn' : 'cả học viện đang nghỉ';
+}
+
+// ---------- map ----------
+const NODES = {
+  brief: { x: 110, y: 100, t: 'Giao việc', s: 'brief + thư mục', kind: 'brief' },
+  t1: { x: 310, y: 100, t: 'Tháp Giải Mã', s: 'I · Debrief', kind: 'tower', color: '#6c8ebf' },
+  s1: { x: 510, y: 100, t: 'Ấn I', s: 'duyệt debrief', kind: 'seal' },
+  t2: { x: 710, y: 100, t: 'Đài Quan Sao', s: 'II · Research', kind: 'tower', color: '#8a7cc8' },
+  s2: { x: 890, y: 100, t: 'Ấn II', s: 'chọn manh mối', kind: 'seal' },
+  t3: { x: 890, y: 290, t: 'Xưởng Giả Kim', s: 'III · Brainstorm', kind: 'tower', color: '#4fa38a' },
+  t4: { x: 600, y: 290, t: 'Phòng Ba Nến', s: 'IV · 3 concept', kind: 'tower', color: '#e2b45a' },
+  s3: { x: 310, y: 290, t: 'Ấn III', s: 'chọn 2 concept', kind: 'seal' },
+  t5: { x: 310, y: 470, t: 'Tháp Chế Tác', s: 'V · Proposal', kind: 'tower', color: '#b07ad0' },
+  t6: { x: 600, y: 470, t: 'Hội Đồng', s: 'VI · Thẩm định', kind: 'tower', color: '#a3a3b8' },
+  deck: { x: 890, y: 470, t: 'Proposal', s: 'sẵn sàng pitch', kind: 'deck' },
+};
+const EDGES = [['brief','t1'],['t1','s1'],['s1','t2'],['t2','s2'],['s2','t3'],['t3','t4'],['t4','s3'],['s3','t5'],['t5','t6'],['t6','deck']];
+function edgePath(a, b) {
+  const A = NODES[a], B = NODES[b];
+  if (A.y === B.y) return `M${A.x} ${A.y} H${B.x}`;
+  return `M${A.x} ${A.y} V${B.y}`;
+}
+function buildMap() {
+  let svg = '';
+  EDGES.forEach(([a, b]) => { svg += `<path class="edge" id="e-${a}-${b}" d="${edgePath(a, b)}"/>`; });
+  // loop back t6 → t5 and seal "sửa" loops
+  svg += `<path class="edge loop" id="e-loop" d="M600 470 C600 552, 310 552, 310 470"/>`;
+  svg += `<text x="455" y="538" text-anchor="middle" font-family="Be Vietnam Pro, Arial" font-size="12" fill="#d0563f">trượt → sửa</text>`;
+  for (const [id, n] of Object.entries(NODES)) {
+    let inner = '';
+    if (n.kind === 'tower') inner = wizardG(n.color, n.x, n.y - 2, 4);
+    else if (n.kind === 'seal') {
+      let pts = ''; for (let i = 0; i < 16; i++) { const r = i % 2 ? 24 : 28, a = i / 16 * Math.PI * 2; pts += `${(n.x + Math.cos(a) * r).toFixed(1)},${(n.y + Math.sin(a) * r).toFixed(1)} `; }
+      inner = `<polygon points="${pts}" fill="#d0563f"/><text x="${n.x}" y="${n.y + 6}" text-anchor="middle" font-family="Grenze Gotisch, Georgia, serif" font-size="18" font-weight="700" fill="#12131f">${n.t.split(' ')[1]}</text>`;
+    } else if (n.kind === 'brief') {
+      inner = `<rect x="${n.x - 18}" y="${n.y - 10}" width="36" height="20" fill="#efe4cc"/><circle cx="${n.x - 18}" cy="${n.y}" r="10" fill="#cdbf9f"/><circle cx="${n.x + 18}" cy="${n.y}" r="10" fill="#cdbf9f"/><circle cx="${n.x}" cy="${n.y}" r="4" fill="#d0563f"/>`;
+    } else {
+      inner = `<rect x="${n.x - 20}" y="${n.y - 18}" width="40" height="36" fill="#e2b45a"/><rect x="${n.x - 2}" y="${n.y - 18}" width="4" height="36" fill="#12131f"/>`;
+    }
+    svg += `<g class="node" id="n-${id}"><circle class="halo" cx="${n.x}" cy="${n.y}" r="58"/><circle class="ring" cx="${n.x}" cy="${n.y}" r="44"/>${inner}
+      <text class="t" x="${n.x}" y="${n.y + 68}">${n.t}</text><text class="s" x="${n.x}" y="${n.y + 85}">${n.s}</text>
+      <g class="flag"><rect x="${n.x - 40}" y="${n.y - 74}" width="80" height="22" fill="#d0563f"/><text x="${n.x}" y="${n.y - 58}" text-anchor="middle" font-family="Be Vietnam Pro, Arial" font-size="12" font-weight="700" fill="#12131f">chờ bạn</text></g></g>`;
+  }
+  $('map').innerHTML = svg;
+}
+function setNode(id, cls) { const g = $('n-' + id); if (g) g.setAttribute('class', 'node' + (cls ? ' ' + cls : '')); }
+function setEdge(id, cls) { const p = $(id); if (p) p.setAttribute('class', 'edge' + (id === 'e-loop' ? ' loop' : '') + (cls ? ' ' + cls : '')); }
+function renderChips(state) {
+  $('chips').innerHTML = CHIPS.map(([id, l]) => `<div class="chip ${state[id] || ''}">${l}</div>`).join('');
+}
+
+// ---------- clock & stats ----------
+const DOW = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
+function tick() { const d = new Date(); $('clock').textContent = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')} · ${DOW[d.getDay()]} ${d.getDate()}/${d.getMonth() + 1}`; }
+tick(); setInterval(tick, 15000);
+$('nBrief').textContent = BRIEFS.length;
+const todayKey = 'hv-runs-' + new Date().toDateString();
+let runsToday = 0; try { runsToday = +localStorage.getItem(todayKey) || 0; } catch (e) {}
+$('nRuns').textContent = runsToday;
+
+// ---------- practice engine ----------
+let speed = 3, runId = 0, chipState = {};
+// a run that was restarted never wakes up again
+const sleep = ms => { const id = runId; return new Promise(r => setTimeout(() => { if (id === runId) r(); }, ms / speed)); };
+function log(text, gate) {
+  const ol = $('log'); if (ol.dataset.fresh !== '1') { ol.innerHTML = ''; ol.dataset.fresh = '1'; }
+  const d = new Date(); const li = document.createElement('li'); if (gate) li.className = 'g';
+  li.innerHTML = `<time>${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}:${String(d.getSeconds()).padStart(2, '0')}</time><span></span>`;
+  li.querySelector('span').textContent = text; ol.append(li); ol.scrollTop = ol.scrollHeight;
+}
+let pending = [];
+function renderTasks() {
+  const box = $('tasks');
+  $('taskHead').textContent = `Việc đang chờ bạn (${pending.length})`;
+  $('nSeal').textContent = pending.length; $('statSeal').classList.toggle('alert', pending.length > 0);
+  if (!pending.length) { box.innerHTML = '<p class="empty">Chưa có ấn nào chờ duyệt.</p>'; return; }
+  box.innerHTML = '';
+  for (const t of pending) {
+    const el = document.createElement('div'); el.className = 'task';
+    el.innerHTML = `<div class="seal">${t.mark}</div><div><h3></h3><p></p><div class="acts"></div></div>`;
+    el.querySelector('h3').textContent = t.title; el.querySelector('p').textContent = t.text;
+    t.choices.forEach((c, i) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn ' + (i === 0 ? 'gold' : ''); b.textContent = c[0]; b.addEventListener('click', () => { pending = pending.filter(x => x !== t); renderTasks(); t.resolve(c[1]); }); el.querySelector('.acts').append(b); });
+    box.append(el);
+  }
+}
+function ask(mark, title, text, choices) { return new Promise(resolve => { pending.push({ mark, title, text, choices, resolve }); renderTasks(); }); }
+
+async function towerWork(t, plan) {
+  // plan: array of groups; each group = [[agentIndex, ms, text], ...] run in parallel
+  for (const group of plan) {
+    await Promise.all(group.map(async ([k, ms, text]) => {
+      const name = t.agents[k][0]; status[name] = 'work'; renderRoster();
+      await sleep(ms); status[name] = 'done'; runs[name] = (runs[name] || 0) + 1; renderRoster();
+      if (text) log(t.roman + ' · ' + text);
+    }));
+  }
+}
+async function travel(a, b) { const id = `e-${a}-${b}`; setEdge(id, 'on'); await sleep(900); setEdge(id, 'done'); }
+function enter(id) { openTower = id; chipState[id] = 'on'; renderChips(chipState); setNode(id, 'on'); renderRoster(); }
+function leave(id) { chipState[id] = 'done'; renderChips(chipState); setNode(id, 'done'); }
+async function gate(id, mark, title, text, redoTower, redoPlan) {
+  chipState[id] = 'wait'; renderChips(chipState); setNode(id, 'wait');
+  log('Ấn ' + mark + ' khoá: ' + title + '.', true);
+  for (;;) {
+    const v = await ask(mark, title, text, [['Duyệt', 'ok'], ['Sửa chữ', 'fix']]);
+    if (v === 'ok') break;
+    log('Bạn trả về sửa. Tầng ' + redoTower.roman + ' làm lại.', true);
+    setNode(id, ''); setEdge(`e-${redoTower.id}-${id}`, 'on'); setNode(redoTower.id, 'on');
+    await towerWork(redoTower, redoPlan);
+    setNode(redoTower.id, 'done'); setEdge(`e-${redoTower.id}-${id}`, 'done'); setNode(id, 'wait');
+    log('Đã sửa theo ghi chú. Ấn ' + mark + ' chờ bạn lần nữa.', true);
+  }
+  leave(id); log('Ấn ' + mark + ' đóng.', true);
+}
+
+function resetBoard() {
+  for (const k in status) delete status[k];
+  pending = []; renderTasks(); chipState = {}; renderChips(chipState); buildMap(); renderRoster();
+  const ol = $('log'); ol.innerHTML = ''; ol.dataset.fresh = '1';
+}
+
+async function practice() {
+  const id = ++runId; const alive = () => id === runId;
+  resetBoard();
+  const brief = base($('practiceBrief').value);
+  const [T1, T2, T3, T4, T5, T6] = TOWERS;
+  status[HEAD.name] = 'work'; renderRoster();
+  enter('brief'); log('Hiệu Trưởng nhận brief tập: ' + brief + '. Mở forart-proposal-patterns.md, tìm proposal mẫu gần nhất.');
+  await sleep(1400); if (!alive()) return; leave('brief'); status[HEAD.name] = 'idle';
+  await travel('brief', 't1'); enter('t1');
+  await towerWork(T1, [[[0, 2600, 'Bảng debrief xong, thiếu ngân sách và mốc quay (ví dụ).']], [[1, 1800, 'Bộ Luật Thương Hiệu: màu, font, vùng an toàn logo, điều cấm.']]]); if (!alive()) return;
+  leave('t1'); await travel('t1', 's1');
+  await gate('s1', 'I', 'Duyệt bảng debrief', 'Xem bảng debrief, chốt cấp độ proposal và câu hỏi gửi khách.', T1, [[[0, 1200, 'Sửa bảng debrief theo ghi chú.']]]); if (!alive()) return;
+  await travel('s1', 't2'); enter('t2');
+  await towerWork(T2, [[[0, 2200, 'Tiên Tri Thương Hiệu: 3 chiến dịch gần nhất.'], [1, 2800, 'Tiên Tri Khán Giả: 4 nguồn.'], [2, 1900, 'Kẻ Canh Đối Thủ: 3 ý đã có người làm.'], [3, 3200, 'Sưu Tầm Thước Phim: 6 reference.']], [[4, 2000, 'Sổ Nguồn: 2 câu “chưa xác minh”, 4 manh mối insight.']]]); if (!alive()) return;
+  leave('t2'); await travel('t2', 's2');
+  await gate('s2', 'II', 'Chọn manh mối insight', 'Bốn manh mối có nguồn. Giữ manh mối nào làm nền cho brainstorm?', T2, [[[4, 1200, 'Sổ Nguồn: rút lại manh mối theo ghi chú.']]]); if (!alive()) return;
+  await travel('s2', 't3'); enter('t3');
+  await towerWork(T3, [[0,1,2,3,4,5,6].map(k => [k, 1300 + (k * 433) % 1500, null])]); log('III · Bảy lăng kính: 17 ý thô.');
+  await towerWork(T3, [[[7, 2200, 'Người Cân Ma Lực: còn 14 ý, chấm 6 tiêu chí, giữ top 5.']]]); if (!alive()) return;
+  leave('t3'); await travel('t3', 't4'); enter('t4');
+  await towerWork(T4, [[[0, 2500, 'Nến Bạc: concept an toàn.'], [1, 3000, 'Nến Vàng: concept cân bằng.'], [2, 3400, 'Nến Đỏ: concept táo bạo.']], [[3, 1800, 'Hậu Cần: bảng so sánh, khuyến nghị Nến Vàng.']]]); if (!alive()) return;
+  leave('t4'); await travel('t4', 's3');
+  await gate('s3', 'III', 'Chọn 2 concept vào deck', 'Khuyến nghị Nến Vàng làm Idea 1. Chọn Idea 2.', T4, [[[3, 1200, 'Hậu Cần: cập nhật so sánh theo ghi chú.']]]); if (!alive()) return;
+  await travel('s3', 't5'); enter('t5');
+  const t5plan = async () => {
+    status['Nhà Ảo Ảnh'] = 'hold'; renderRoster();
+    log('V · Nhà Ảo Ảnh xin tạo 24 ảnh storyboard.', true);
+    const ok = await ask('✦', 'Tạo 24 ảnh storyboard?', 'Nhà Ảo Ảnh cần 12 khung cho mỗi idea. Credit luôn cần bạn đồng ý.', [['Đồng ý', true], ['Dùng khung giữ chỗ', false]]);
+    status['Nhà Ảo Ảnh'] = 'idle';
+    await towerWork(T5, [[[1, ok ? 2600 : 900, ok ? 'Nhà Ảo Ảnh: 24 ảnh minh hoạ.' : 'Nhà Ảo Ảnh: 24 khung giữ chỗ có mô tả.']]]);
+  };
+  await Promise.all([towerWork(T5, [[[0, 3400, 'Treatment: 7 phần × 2 idea.'], [2, 2400, 'Kho Tham Chiếu: 8 link, 3 moodboard.']]]), t5plan()]); if (!alive()) return;
+  await towerWork(T5, [[[3, 1800, 'Thợ Đóng Sách: deck v1.']]]);
+  leave('t5'); await travel('t5', 't6'); enter('t6');
+  await towerWork(T6, [[[0, 2200, 'Trượt: Structure Idea 2 dài 33 giây, brief 30 giây.'], [1, 2400, '5 câu hỏi khó, 4 câu có slide trả lời.']]]); if (!alive()) return;
+  log('VI · Trả deck về Tháp Chế Tác.', true);
+  setNode('t6', ''); setEdge('e-loop', 'on'); setNode('t5', 'on'); chipState.t6 = ''; chipState.t5 = 'on'; renderChips(chipState);
+  await sleep(1000);
+  await towerWork(T5, [[[0, 1500, 'Treatment: cắt Body Idea 2 còn 18 giây.']], [[3, 1000, 'Thợ Đóng Sách: deck v2.']]]); if (!alive()) return;
+  setEdge('e-loop', ''); leave('t5'); await travel('t5', 't6'); enter('t6');
+  await towerWork(T6, [[[0, 1600, 'Đạt: đủ 7 phần, thời lượng khớp, không phạm điều cấm.'], [1, 1600, 'Đạt: 5/5 câu hỏi có slide trả lời.']]]); if (!alive()) return;
+  leave('t6'); await travel('t6', 'deck'); setNode('deck', 'done');
+  log('Creative proposal sẵn sàng pitch. Hết lượt tập.');
+  runsToday++; $('nRuns').textContent = runsToday; try { localStorage.setItem(todayKey, String(runsToday)); } catch (e) {}
+  $('runBtn').textContent = '▶ Chạy lại';
+}
+
+$('runBtn').addEventListener('click', () => { $('runBtn').textContent = '↺ Chạy lại từ đầu'; practice(); });
+document.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+  speed = +b.dataset.speed; document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+}));
+
+// ---------- prompt composer ----------
+const PRESETS = [
+  { id: 'full', t: 'Pitch trọn gói', s: 'Debrief đến deck, dừng 3 cổng', set: { scope: 'full', gates: true, parallel: true } },
+  { id: 'debrief', t: 'Chỉ lên debrief', s: 'Đọc brief, hỏi khách, dừng Cổng 1', set: { scope: 'debrief', gates: true, parallel: false } },
+  { id: 'concepts', t: '3 concept nhanh', s: 'Chạy thẳng đến bảng so sánh', set: { scope: 'concepts', gates: false, parallel: true } },
+  { id: 'qa', t: 'Thẩm định deck', s: 'Checklist + 5 câu hỏi khó', set: { scope: 'qa', gates: true, parallel: true } },
+];
+function fillSelects() {
+  const opts = BRIEFS.map(p => `<option value="${p}">${base(p)}</option>`).join('');
+  $('practiceBrief').innerHTML = opts;
+  $('fBrief').innerHTML = opts + '<option value="__other">Brief khác (nhập đường dẫn)</option>';
+  $('fBrand').innerHTML = BRANDS.map(([v, l]) => `<option value="${v}">${l}</option>`).join('');
+  $('presets').innerHTML = PRESETS.map(p => `<button type="button" class="preset" data-p="${p.id}" aria-pressed="${p.id === 'full'}"><b>${p.t}</b><span>${p.s}</span></button>`).join('');
+  $('presets').querySelectorAll('.preset').forEach(b => b.addEventListener('click', () => {
+    const p = PRESETS.find(x => x.id === b.dataset.p);
+    $('fScope').value = p.set.scope; $('fGates').checked = p.set.gates; $('fParallel').checked = p.set.parallel;
+    $('presets').querySelectorAll('.preset').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    compose();
+  }));
+}
+const SCOPE_TEXT = {
+  full: 'Làm trọn 6 giai đoạn: Debrief → Research → Brainstorm → 3 concept → Creative proposal → Kiểm tra trước khi giao.',
+  debrief: 'Chỉ làm Giai đoạn 1 (Debrief) rồi dừng ở Cổng duyệt 1.',
+  research: 'Làm Giai đoạn 1 và 2 (Debrief, Research) rồi dừng ở Cổng duyệt 2.',
+  concepts: 'Làm đến Giai đoạn 4: đề xuất 3 concept khác hướng, bảng so sánh và khuyến nghị, rồi dừng ở Cổng duyệt 3.',
+  deck: 'Bỏ qua Giai đoạn 1–4. Dựng creative proposal (Giai đoạn 5) cho 2 concept đã chọn bên dưới, rồi chạy Giai đoạn 6.',
+  qa: 'Chỉ chạy Giai đoạn 6 (Kiểm tra trước khi giao) cho deck bên dưới.',
+};
+function compose() {
+  const briefSel = $('fBrief').value; $('otherWrap').hidden = briefSel !== '__other';
+  const scope = $('fScope').value; $('conceptWrap').hidden = !(scope === 'deck' || scope === 'qa');
+  $('conceptWrap').querySelector('label').textContent = scope === 'qa' ? 'Đường dẫn deck cần thẩm định' : '2 concept đã chọn';
+  const brief = briefSel === '__other' ? ($('fOther').value.trim() || '<đường dẫn brief>') : briefSel;
+  const brand = $('fBrand').value;
+  const type = $('fType').value, len = $('fLen').value.trim();
+  const level = { ask: 'Chưa rõ, hỏi tôi ở Cổng duyệt 1.', pitch: 'Pitch ban đầu.', job: 'Job đã chốt (storyboard từng shot).' }[$('fLevel').value];
+  const theme = $('fTheme').value;
+  const lines = [];
+  lines.push('Dùng skill creative-pitch-agent cho ForArt Film.');
+  lines.push('');
+  lines.push(`Brief: "${brief}"`);
+  lines.push(`Brand guideline: ${brand ? '"' + brand + '"' : 'chưa có, đọc quy định thương hiệu trong brief; thiếu gì thì liệt kê ở bảng debrief.'}`);
+  if (type !== 'Để agent đọc từ brief' || len) lines.push(`Loại job: ${type === 'Để agent đọc từ brief' ? 'theo brief' : type}${len ? ', thời lượng ' + len : ''}.`);
+  lines.push(`Cấp độ proposal: ${level}`);
+  lines.push(`Phạm vi: ${SCOPE_TEXT[scope]}`);
+  if (scope === 'deck') lines.push(`2 concept đã chọn: ${$('fConcepts').value.trim() || '<Idea 1: … / Idea 2: …>'}`);
+  if (scope === 'qa') lines.push(`Deck cần thẩm định: "${$('fConcepts').value.trim() || '<đường dẫn deck>'}"`);
+  lines.push($('fGates').checked ? 'Cổng duyệt: dừng ở từng cổng duyệt và chờ tôi.' : 'Cổng duyệt: chạy thẳng. Tự chọn theo khuyến nghị và ghi mọi giả định ở đầu kết quả.');
+  if ($('fParallel').checked) lines.push('Song song: dùng subagent chạy cùng lúc cho Research (thương hiệu, khán giả, đối thủ, reference), Brainstorm (mỗi lăng kính một subagent), 3 concept (an toàn, cân bằng, táo bạo) và Kiểm tra (checklist, đóng vai khách hàng). Gom kết quả trước khi trình tôi.');
+  if (scope === 'full' || scope === 'deck') {
+    lines.push($('fImages').checked ? 'Ảnh AI: được dùng AiWings cho storyboard, nhân vật, key scene, nhưng báo số ảnh dự kiến và chờ tôi đồng ý trước khi tạo.' : 'Ảnh AI: không tạo. Dùng khung giữ chỗ có mô tả và từ khoá tìm kiếm.');
+    lines.push(`Deck: Claude Slides, áp design system "ForArt Proposal Design System"${theme ? ', theme ' + theme : ', chọn theme theo brand guideline của khách'}.`);
+  }
+  const note = $('fNote').value.trim(); if (note) lines.push(`Ghi chú: ${note}`);
+  $('prompt').value = lines.join('\n');
+  $('copyNote').textContent = 'dán vào Claude Code'; $('copyNote').className = '';
+}
+['fBrief', 'fOther', 'fBrand', 'fType', 'fLen', 'fLevel', 'fTheme', 'fScope', 'fConcepts', 'fGates', 'fParallel', 'fImages', 'fNote'].forEach(id => {
+  $(id).addEventListener('input', compose); $(id).addEventListener('change', compose);
+});
+$('copyBtn').addEventListener('click', async () => {
+  const ta = $('prompt');
+  try { await navigator.clipboard.writeText(ta.value); $('copyNote').textContent = 'Đã chép. Dán vào Claude Code.'; $('copyNote').className = 'copied'; }
+  catch (e) { ta.focus(); ta.select(); $('copyNote').textContent = 'Trình duyệt chặn chép tự động: chữ đã được bôi đen, bấm Ctrl+C.'; }
+});
+
+fillSelects(); buildMap(); renderChips({}); renderRoster(); renderTasks(); compose();
+})();
+</script>
+</body>
+</html>
